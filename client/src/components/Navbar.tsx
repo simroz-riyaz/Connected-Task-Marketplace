@@ -35,8 +35,8 @@ const Navbar = () => {
             <div className="container navbar-container">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
                     <Link to="/" className="logo">
-                        <div className="logo-icon">K</div>
-                        <span>Connected</span>
+                        <div className="logo-icon">C</div>
+                        <span>Connected Task</span>
                     </Link>
 
                     <div className="nav-links">

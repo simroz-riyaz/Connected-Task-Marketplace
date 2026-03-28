@@ -42,8 +42,8 @@ const Footer: React.FC = () => {
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 color: 'white', fontWeight: 900, fontSize: '1.1rem',
                                 boxShadow: '0 0 16px rgba(108,99,255,0.4)',
-                            }}>K</div>
-                            <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#e3e0f8', letterSpacing: '-0.02em' }}>Connected</span>
+                            }}>C</div>
+                            <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#e3e0f8', letterSpacing: '-0.02em' }}>Connected Task</span>
                         </div>
                         <p style={{ color: '#918fa1', fontSize: '0.875rem', lineHeight: 1.7 }}>
                             India's #1 task marketplace. Connect with trusted, verified taskers in your city — fast, safe, and affordable.
