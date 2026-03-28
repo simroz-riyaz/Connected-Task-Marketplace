@@ -1,124 +1,173 @@
-import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react';
 import axios from 'axios';
-import { Mail, Lock, Loader } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
-const Login = () => {
+const Login: React.FC = () => {
+    const { login } = useAuth();
+    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPass, setShowPass] = useState(false);
     const [error, setError] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const { login } = useAuth();
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        setIsSubmitting(true);
+        setLoading(true);
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-            login(response.data.token, response.data.user);
-            window.location.href = '/';
+            const { data } = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+            login(data.token, data.user);
+            navigate('/dashboard');
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Login failed');
+            setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
         } finally {
-            setIsSubmitting(false);
+            setLoading(false);
         }
     };
 
     return (
         <div style={{
-            minHeight: 'calc(100vh - 70px)',
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #0A0A1A 0%, #0e0e30 50%, #0D0D2B 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: 'var(--bg-offset)',
-            padding: '2rem'
+            padding: '2rem 1.25rem',
+            position: 'relative',
+            overflow: 'hidden',
         }}>
-            <div className="card" style={{ maxWidth: '450px', width: '100%', padding: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.75rem', marginBottom: '0.5rem', textAlign: 'center' }}>Welcome back</h2>
-                <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginBottom: '2rem' }}>
-                    New to Connected? <a href="/register" style={{ color: 'var(--primary)', fontWeight: 600 }}>Sign up</a>
-                </p>
+            {/* Background orbs */}
+            <div style={{ position: 'absolute', top: '-80px', right: '-80px', width: '450px', height: '450px', background: 'radial-gradient(circle, rgba(108,99,255,0.2) 0%, transparent 65%)', borderRadius: '50%', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: '-100px', left: '-60px', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(0,212,255,0.12) 0%, transparent 65%)', borderRadius: '50%', pointerEvents: 'none' }} />
 
-                {error && (
-                    <div style={{
-                        backgroundColor: 'rgba(249, 72, 82, 0.1)',
-                        color: 'var(--error)',
-                        padding: '0.75rem',
-                        borderRadius: 'var(--radius-md)',
-                        marginBottom: '1.5rem',
-                        fontSize: '0.9rem',
-                        textAlign: 'center'
-                    }}>
-                        {error}
-                    </div>
-                )}
+            <div style={{ width: '100%', maxWidth: '440px', position: 'relative', zIndex: 1 }}>
 
-                <form onSubmit={handleSubmit}>
-                    <div style={{ marginBottom: '1.25rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, fontSize: '0.9rem' }}>Email Address</label>
-                        <div style={{ position: 'relative' }}>
-                            <Mail size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                            <input
-                                type="email"
-                                required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '0.75rem 0.75rem 0.75rem 40px',
-                                    borderRadius: 'var(--radius-md)',
-                                    border: '1px solid var(--border)',
-                                    outline: 'none'
-                                }}
-                                placeholder="you@example.com"
-                            />
-                        </div>
-                    </div>
-
-                    <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, fontSize: '0.9rem' }}>Password</label>
-                        <div style={{ position: 'relative' }}>
-                            <Lock size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                            <input
-                                type="password"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '0.75rem 0.75rem 0.75rem 40px',
-                                    borderRadius: 'var(--radius-md)',
-                                    border: '1px solid var(--border)',
-                                    outline: 'none'
-                                }}
-                                placeholder="••••••••"
-                            />
-                        </div>
-                        <a href="#" style={{ display: 'block', textAlign: 'right', marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--primary)' }}>
-                            Forgot password?
-                        </a>
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="btn btn-primary"
-                        style={{ width: '100%', padding: '0.875rem', display: 'flex', gap: '8px' }}
-                    >
-                        {isSubmitting ? <Loader className="animate-spin" size={20} /> : 'Log in'}
-                    </button>
-                </form>
-
-                <div style={{ margin: '2rem 0', display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                    <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }}></div>
-                    <span>OR</span>
-                    <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }}></div>
+                {/* Logo */}
+                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+                        <div style={{
+                            width: '44px', height: '44px',
+                            background: 'linear-gradient(135deg, #6C63FF 0%, #A855F7 100%)',
+                            borderRadius: '14px',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: 'white', fontWeight: 900, fontSize: '1.3rem',
+                            boxShadow: '0 0 24px rgba(108,99,255,0.5)',
+                        }}>K</div>
+                        <span style={{ fontSize: '1.35rem', fontWeight: 800, color: '#e3e0f8', letterSpacing: '-0.02em' }}>Connected</span>
+                    </Link>
                 </div>
 
-                <button className="btn btn-outline" style={{ width: '100%', padding: '0.875rem' }}>
-                    Continue with Google
-                </button>
+                {/* Card */}
+                <div style={{
+                    background: 'rgba(26, 26, 43, 0.85)',
+                    backdropFilter: 'blur(30px)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '28px',
+                    padding: '2.5rem',
+                    boxShadow: '0 24px 80px rgba(0,0,0,0.6), 0 0 40px rgba(108,99,255,0.08)',
+                }}>
+                    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#e3e0f8', marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>
+                            Welcome back
+                        </h1>
+                        <p style={{ color: '#918fa1', fontSize: '0.925rem' }}>Sign in to your Connected account</p>
+                    </div>
+
+                    {error && (
+                        <div style={{
+                            background: 'rgba(239,68,68,0.1)',
+                            border: '1px solid rgba(239,68,68,0.25)',
+                            borderRadius: '14px',
+                            padding: '0.875rem 1.125rem',
+                            color: '#F87171',
+                            fontSize: '0.875rem',
+                            marginBottom: '1.5rem',
+                        }}>
+                            {error}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit}>
+                        {/* Email */}
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="login-email">Email</label>
+                            <div className="input-icon-wrapper">
+                                <Mail size={16} className="input-icon" />
+                                <input
+                                    id="login-email"
+                                    type="email"
+                                    className="form-input"
+                                    placeholder="you@example.com"
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        {/* Password */}
+                        <div className="form-group">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <label className="form-label" htmlFor="login-password">Password</label>
+                                <a href="#" style={{ fontSize: '0.8rem', color: '#c4c0ff', fontWeight: 500 }}>Forgot password?</a>
+                            </div>
+                            <div className="input-icon-wrapper" style={{ position: 'relative' }}>
+                                <Lock size={16} className="input-icon" />
+                                <input
+                                    id="login-password"
+                                    type={showPass ? 'text' : 'password'}
+                                    className="form-input"
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChange={e => setPassword(e.target.value)}
+                                    required
+                                    style={{ paddingRight: '3rem' }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPass(!showPass)}
+                                    style={{
+                                        position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)',
+                                        background: 'none', border: 'none', color: '#918fa1', cursor: 'pointer', padding: '4px',
+                                    }}
+                                >
+                                    {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <button
+                            id="login-submit-btn"
+                            type="submit"
+                            className="btn btn-primary btn-full btn-lg"
+                            disabled={loading}
+                            style={{ marginTop: '0.5rem', gap: '0.5rem' }}
+                        >
+                            {loading ? 'Signing in...' : <><LogIn size={18} /> Sign In</>}
+                        </button>
+                    </form>
+
+                    <div className="divider-text" style={{ margin: '1.75rem 0' }}>OR</div>
+
+                    {/* Google placeholder */}
+                    <button
+                        className="btn btn-outline btn-full"
+                        style={{ gap: '0.75rem', marginBottom: '1.75rem' }}
+                    >
+                        <span style={{ fontSize: '1.1rem' }}>🇬</span>
+                        Continue with Google
+                    </button>
+
+                    <p style={{ textAlign: 'center', color: '#918fa1', fontSize: '0.9rem' }}>
+                        Don't have an account?{' '}
+                        <Link to="/register" id="login-to-register-link" style={{ color: '#c4c0ff', fontWeight: 600 }}>
+                            Sign up free
+                        </Link>
+                    </p>
+                </div>
             </div>
         </div>
     );

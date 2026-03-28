@@ -31,7 +31,7 @@ const Chat: React.FC<ChatProps> = ({ taskId, receiverId, receiverName }) => {
             }
         };
         fetchMessages();
-        const interval = setInterval(fetchMessages, 5000); // Poll every 5s
+        const interval = setInterval(fetchMessages, 5000);
         return () => clearInterval(interval);
     }, [taskId]);
 
@@ -44,16 +44,12 @@ const Chat: React.FC<ChatProps> = ({ taskId, receiverId, receiverName }) => {
     const handleSend = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newMessage.trim() && !file) return;
-
         setSending(true);
         const formData = new FormData();
         formData.append('task_id', taskId);
         formData.append('receiver_id', receiverId.toString());
         formData.append('message', newMessage);
-        if (file) {
-            formData.append('file', file);
-        }
-
+        if (file) formData.append('file', file);
         try {
             await axios.post('http://localhost:5000/api/chats', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
@@ -68,131 +64,184 @@ const Chat: React.FC<ChatProps> = ({ taskId, receiverId, receiverName }) => {
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setFile(e.target.files[0]);
-        }
+        if (e.target.files && e.target.files[0]) setFile(e.target.files[0]);
     };
 
-    const isImage = (url: string) => {
-        return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-    };
+    const isImage = (url: string) => /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
 
     return (
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '600px', padding: 0, overflow: 'hidden' }}>
-            <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: 'white', zIndex: 10 }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--bg-offset)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <UserIcon size={18} color="var(--text-muted)" />
+        <div style={{
+            display: 'flex', flexDirection: 'column', height: '520px',
+            background: 'rgba(18,18,34,0.95)', backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px',
+            overflow: 'hidden',
+        }}>
+            {/* Header */}
+            <div style={{
+                padding: '1rem 1.5rem',
+                borderBottom: '1px solid rgba(255,255,255,0.07)',
+                display: 'flex', alignItems: 'center', gap: '0.875rem',
+                background: 'rgba(26,26,43,0.8)',
+            }}>
+                <div style={{
+                    width: '36px', height: '36px', borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #6C63FF, #00D4FF)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'white', fontWeight: 700, fontSize: '0.9rem',
+                    boxShadow: '0 0 12px rgba(108,99,255,0.4)',
+                }}>
+                    {receiverName[0]?.toUpperCase()}
                 </div>
-                <span style={{ fontWeight: 600 }}>{receiverName}</span>
+                <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#e3e0f8' }}>{receiverName}</div>
+                    <div style={{ fontSize: '0.72rem', color: '#34D399', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#34D399', display: 'inline-block' }} />
+                        Online · Secure Chat
+                    </div>
+                </div>
             </div>
 
-            <div ref={scrollRef} style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', backgroundColor: 'var(--bg-offset)' }}>
+            {/* Messages */}
+            <div
+                ref={scrollRef}
+                style={{
+                    flex: 1, padding: '1.25rem', overflowY: 'auto',
+                    display: 'flex', flexDirection: 'column', gap: '0.875rem',
+                    background: 'rgba(12,12,29,0.6)',
+                }}
+            >
                 {loading ? (
-                    <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}><Loader className="animate-spin" size={24} /></div>
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+                        <Loader size={24} color="#6C63FF" style={{ animation: 'spin 1s linear infinite' }} />
+                    </div>
                 ) : messages.length === 0 ? (
-                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '2rem' }}>No messages yet. Start the conversation!</div>
+                    <div style={{ textAlign: 'center', color: '#464555', fontSize: '0.9rem', marginTop: '3rem' }}>
+                        <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>💬</div>
+                        No messages yet. Start the conversation!
+                    </div>
                 ) : (
-                    messages.map((msg, i) => (
-                        <div key={i} style={{
-                            alignSelf: msg.sender_id === user?.id ? 'flex-end' : 'flex-start',
-                            maxWidth: '80%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '0.5rem'
-                        }}>
-                            <div style={{
-                                padding: '0.75rem 1rem',
-                                borderRadius: 'var(--radius-md)',
-                                backgroundColor: msg.sender_id === user?.id ? 'var(--primary)' : 'white',
-                                color: msg.sender_id === user?.id ? 'white' : 'var(--text-main)',
-                                boxShadow: 'var(--shadow-sm)',
-                                fontSize: '0.925rem'
+                    messages.map((msg, i) => {
+                        const isMine = msg.sender_id === user?.id;
+                        return (
+                            <div key={i} style={{
+                                alignSelf: isMine ? 'flex-end' : 'flex-start',
+                                maxWidth: '75%', display: 'flex', flexDirection: 'column', gap: '0.375rem',
                             }}>
-                                {msg.message && <div style={{ marginBottom: msg.file_url ? '0.5rem' : 0 }}>{msg.message}</div>}
+                                <div style={{
+                                    padding: '0.75rem 1.1rem',
+                                    borderRadius: isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                                    background: isMine
+                                        ? 'linear-gradient(135deg, #6C63FF, #A855F7)'
+                                        : 'rgba(51,51,69,0.8)',
+                                    color: '#e3e0f8',
+                                    fontSize: '0.9rem',
+                                    boxShadow: isMine
+                                        ? '0 4px 20px rgba(108,99,255,0.3)'
+                                        : '0 2px 8px rgba(0,0,0,0.3)',
+                                    border: isMine
+                                        ? 'none'
+                                        : '1px solid rgba(255,255,255,0.06)',
+                                }}>
+                                    {msg.message && <div style={{ marginBottom: msg.file_url ? '0.5rem' : 0 }}>{msg.message}</div>}
 
-                                {msg.file_url && (
-                                    <div style={{
-                                        borderRadius: 'var(--radius-sm)',
-                                        overflow: 'hidden',
-                                        backgroundColor: msg.sender_id === user?.id ? 'rgba(255,255,255,0.1)' : 'var(--bg-offset)',
-                                        border: '1px solid var(--border)'
-                                    }}>
-                                        {isImage(msg.file_url) ? (
-                                            <img
-                                                src={`http://localhost:5000${msg.file_url}`}
-                                                alt="attachment"
-                                                style={{ maxWidth: '100%', display: 'block', cursor: 'pointer' }}
-                                                onClick={() => window.open(`http://localhost:5000${msg.file_url}`, '_blank')}
-                                            />
-                                        ) : (
-                                            <a
-                                                href={`http://localhost:5000${msg.file_url}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '0.75rem',
-                                                    padding: '0.75rem',
-                                                    textDecoration: 'none',
-                                                    color: msg.sender_id === user?.id ? 'white' : 'var(--primary)',
-                                                    fontSize: '0.85rem'
-                                                }}
-                                            >
-                                                <File size={18} />
-                                                <span style={{ textDecoration: 'underline' }}>View Document</span>
-                                            </a>
-                                        )}
+                                    {msg.file_url && (
+                                        <div style={{ borderRadius: '10px', overflow: 'hidden', background: 'rgba(0,0,0,0.2)' }}>
+                                            {isImage(msg.file_url) ? (
+                                                <img
+                                                    src={`http://localhost:5000${msg.file_url}`}
+                                                    alt="attachment"
+                                                    style={{ maxWidth: '100%', display: 'block', cursor: 'pointer', borderRadius: '10px' }}
+                                                    onClick={() => window.open(`http://localhost:5000${msg.file_url}`, '_blank')}
+                                                />
+                                            ) : (
+                                                <a
+                                                    href={`http://localhost:5000${msg.file_url}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', textDecoration: 'none', color: '#c4c0ff', fontSize: '0.85rem' }}
+                                                >
+                                                    <File size={16} />
+                                                    <span style={{ textDecoration: 'underline' }}>View Document</span>
+                                                </a>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.375rem', textAlign: 'right' }}>
+                                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </div>
-                                )}
-
-                                <div style={{ fontSize: '0.7rem', opacity: 0.7, marginTop: '0.25rem', textAlign: 'right' }}>
-                                    {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </div>
                             </div>
-                        </div>
-                    ))
+                        );
+                    })
                 )}
             </div>
 
+            {/* File preview */}
             {file && (
-                <div style={{ padding: '0.75rem 1.5rem', borderTop: '1px solid var(--border)', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                        <Paperclip size={16} />
+                <div style={{
+                    padding: '0.625rem 1.25rem',
+                    borderTop: '1px solid rgba(255,255,255,0.07)',
+                    background: 'rgba(26,26,43,0.8)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.82rem', color: '#c4c0ff' }}>
+                        <Paperclip size={14} />
                         <span style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</span>
                     </div>
-                    <button onClick={() => setFile(null)} style={{ color: 'var(--error)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                        <X size={18} />
+                    <button onClick={() => setFile(null)} style={{ color: '#F87171', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                        <X size={16} />
                     </button>
                 </div>
             )}
 
-            <form onSubmit={handleSend} style={{ padding: '1rem', borderTop: '1px solid var(--border)', display: 'flex', gap: '0.75rem', backgroundColor: 'white' }}>
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    style={{ display: 'none' }}
-                />
+            {/* Input */}
+            <form onSubmit={handleSend} style={{
+                padding: '0.875rem 1rem',
+                borderTop: '1px solid rgba(255,255,255,0.07)',
+                display: 'flex', gap: '0.625rem', alignItems: 'center',
+                background: 'rgba(26,26,43,0.8)',
+            }}>
+                <input type="file" ref={fileInputRef} onChange={handleFileChange} style={{ display: 'none' }} />
                 <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    style={{ width: '45px', height: '45px', borderRadius: '50%', backgroundColor: 'var(--bg-offset)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
+                    style={{
+                        width: '40px', height: '40px', borderRadius: '50%',
+                        background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)',
+                        color: '#c4c0ff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', flexShrink: 0, transition: 'all 0.2s ease',
+                    }}
                 >
-                    <Paperclip size={20} />
+                    <Paperclip size={17} />
                 </button>
                 <input
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type an encrypted message..."
-                    style={{ flex: 1, padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', outline: 'none' }}
+                    placeholder="Type a message..."
+                    style={{
+                        flex: 1, padding: '0.75rem 1rem',
+                        background: 'rgba(51,51,69,0.7)', border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '50px', outline: 'none', color: '#e3e0f8', fontSize: '0.875rem',
+                        transition: 'border-color 0.2s ease',
+                    }}
+                    onFocus={e => (e.currentTarget.style.borderColor = 'rgba(0,212,255,0.35)')}
+                    onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
                 />
                 <button
                     type="submit"
                     disabled={sending || (!newMessage.trim() && !file)}
-                    style={{ width: '45px', height: '45px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
+                    style={{
+                        width: '40px', height: '40px', borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #6C63FF, #A855F7)',
+                        color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        border: 'none', cursor: 'pointer', flexShrink: 0,
+                        boxShadow: '0 4px 16px rgba(108,99,255,0.4)',
+                        opacity: sending || (!newMessage.trim() && !file) ? 0.5 : 1,
+                        transition: 'all 0.2s ease',
+                    }}
                 >
-                    {sending ? <Loader className="animate-spin" size={18} /> : <Send size={18} />}
+                    {sending ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Send size={16} />}
                 </button>
             </form>
         </div>

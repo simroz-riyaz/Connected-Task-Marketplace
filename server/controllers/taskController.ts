@@ -23,7 +23,7 @@ export const createTask = async (req: AuthRequest, res: Response) => {
 };
 
 export const getTasks = async (req: AuthRequest, res: Response) => {
-    const { category, status, limit = 10, offset = 0 } = req.query;
+    const { category, status, search, client_id, limit = 50, offset = 0 } = req.query;
 
     let query = 'SELECT T.*, U.name as client_name FROM Tasks T JOIN Users U ON T.client_id = U.id WHERE 1=1';
     const params: any[] = [];
@@ -36,6 +36,16 @@ export const getTasks = async (req: AuthRequest, res: Response) => {
     if (status) {
         query += ' AND T.status = ?';
         params.push(status);
+    }
+
+    if (search) {
+        query += ' AND (T.title LIKE ? OR T.description LIKE ?)';
+        params.push(`%${search}%`, `%${search}%`);
+    }
+
+    if (client_id) {
+        query += ' AND T.client_id = ?';
+        params.push(Number(client_id));
     }
 
     query += ' ORDER BY T.created_at DESC LIMIT ? OFFSET ?';

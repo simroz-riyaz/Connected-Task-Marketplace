@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import { MapPin, Calendar, User as UserIcon, DollarSign, MessageSquare, Loader, CheckCircle } from 'lucide-react';
+import { MapPin, Calendar, User as UserIcon, IndianRupee, MessageSquare, Loader, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Chat from '../components/Chat';
 
@@ -104,7 +104,7 @@ const TaskDetails = () => {
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
                                     <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Task Budget</div>
-                                    <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary)' }}>AED {task.budget}</div>
+                                    <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '4px' }}><IndianRupee size={24} strokeWidth={2.5} />{Number(task.budget).toLocaleString('en-IN')}</div>
                                 </div>
                             </div>
 
@@ -176,7 +176,7 @@ const TaskDetails = () => {
                                                 </div>
                                             </div>
                                             <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                                <div style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--primary)' }}>AED {offer.price}</div>
+                                                <div style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '3px' }}><IndianRupee size={18} strokeWidth={2.5}/>{Number(offer.price).toLocaleString('en-IN')}</div>
                                                 <button
                                                     onClick={() => handleAcceptOffer(offer.id)}
                                                     className="btn btn-primary"
@@ -218,9 +218,9 @@ const TaskDetails = () => {
                                     <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Make an Offer</h3>
                                     <form onSubmit={handleOfferSubmit}>
                                         <div style={{ marginBottom: '1.25rem' }}>
-                                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.9rem' }}>Your Price (AED)</label>
+                                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.9rem' }}>Your Price (₹ INR)</label>
                                             <div style={{ position: 'relative' }}>
-                                                <DollarSign size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                                                <IndianRupee size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                                                 <input
                                                     type="number"
                                                     required
